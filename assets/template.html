@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>업무 길잡이</title>
+<style>
+:root{
+  --bg:#eef1f5; --panel:#fff; --line:#cfd6de; --line2:#e2e8f0; --text:#1b2430; --muted:#5b6878; --soft:#f3f6fa;
+  --head:#1e293b; --key:#fef9c3; --zebra:#f8fafc;
+  --cols:70px minmax(0,1fr) 200px 180px 250px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;font-size:15.5px;line-height:1.55}
+header{background:var(--soft);border-bottom:1px solid var(--line);padding:10px 22px 0;position:sticky;top:0;z-index:30}
+.h-top{display:flex;align-items:flex-end;gap:6px;flex-wrap:wrap}
+.h-top h1{font-size:19px;margin:0 14px 10px 0;font-weight:700;cursor:pointer}
+#tabs button{font:inherit;font-size:15.5px;padding:8px 18px;border:1px solid var(--line);border-bottom:4px solid transparent;background:#fff;border-radius:7px 7px 0 0;color:#475569;cursor:pointer;display:inline-flex;align-items:center;gap:7px;margin-bottom:-1px}
+#tabs button.active{border-bottom-color:var(--tc);color:var(--text);font-weight:700}
+.dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+.search{margin-left:auto;margin-bottom:8px}
+.search input{width:300px;max-width:60vw;padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:14.5px;font-family:inherit}
+main{padding:16px 22px;max-width:1320px;margin:0 auto}
+.detail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px 20px}
+.detail h2{margin:0 0 10px;font-size:21px;display:flex;align-items:center;gap:10px}
+.filter{display:flex;align-items:flex-start;gap:4px;margin-bottom:4px}
+.filter .lab{flex:0 0 58px;font-size:13px;color:var(--muted);font-weight:700;padding-top:7px}
+.chips,.jump{display:flex;flex-wrap:wrap;gap:5px}
+.chip,.mchip{font:inherit;font-size:14px;padding:5px 12px;border:1px solid var(--line);border-radius:5px;background:#fff;color:#334155;cursor:pointer}
+.chip:hover,.mchip:hover{background:var(--soft)}
+.chip.on,.mchip.on{background:var(--c);border-color:var(--c);color:#fff;font-weight:700}
+.mchip{min-width:52px}
+.mchip:disabled{color:#b6bfca;border-style:dashed;cursor:default;background:#fff}
+.desc{color:var(--muted);font-size:13.5px;margin:8px 0 0 62px}
+.sec-h{font-size:13px;font-weight:700;color:var(--muted);margin:10px 0 6px 62px}
+.steps{display:flex;flex-wrap:wrap;gap:6px 4px;align-items:stretch;margin-left:62px}
+.step{background:var(--soft);border:1px solid var(--line2);border-radius:6px;padding:5px 10px;font-size:14px;max-width:100%}
+.step b{color:var(--c);margin-right:5px;white-space:nowrap}
+.arrow{color:#a3aebb;align-self:center;font-size:12px}
+.grid-head,.row{display:grid;grid-template-columns:var(--cols);column-gap:0}
+.grid-head{position:sticky;top:var(--hh,56px);z-index:20;background:var(--head);color:#fff;font-size:14px;font-weight:700;margin-top:14px;border-radius:6px 6px 0 0}
+.grid-head div{padding:9px 10px}
+.month-h{display:flex;align-items:center;gap:8px;font-weight:800;font-size:16.5px;padding:8px 10px;cursor:pointer;user-select:none;scroll-margin-top:110px;
+  background:color-mix(in srgb,var(--c) 14%,#fff);color:color-mix(in srgb,var(--c) 75%,#000);border-bottom:1px solid var(--line)}
+.month-h small{font-weight:400;font-size:12.5px;color:var(--muted)}
+.caret{display:inline-block;width:14px;font-size:12px;transition:transform .12s}
+.month-sec.folded .caret{transform:rotate(-90deg)}
+.month-sec.folded .month-body{display:none}
+.month-sec.single .caret{display:none}
+.month-sec.single .month-h{cursor:default}
+.row{border-bottom:1px solid var(--line2)}
+.row>div{padding:10px;min-width:0}
+.month-body .row:nth-child(even){background:var(--zebra)}
+.row:hover{background:#eef4ff !important}
+.row.key,.month-body .row.key:nth-child(even){background:var(--key)}
+.row .d{font-weight:700;color:color-mix(in srgb,var(--c) 75%,#000);white-space:nowrap}
+.row .title{font-weight:600;font-size:15.5px;cursor:pointer}
+.row .title:hover{text-decoration:underline}
+.taskname{font-size:12.5px;color:var(--muted);margin-top:2px;cursor:pointer}
+.taskname:hover{text-decoration:underline}
+.row .body{display:none;margin-top:7px;font-size:13.5px;color:#3d4653;background:var(--soft);border:1px solid var(--line2);padding:8px 10px;border-radius:6px}
+.row.open .body{display:block}
+.basis{font-size:13px;color:#475569;word-break:keep-all}
+.links a{display:block;font-size:13px;color:#1d4ed8;text-decoration:none;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.links a:hover{text-decoration:underline}
+.badge{display:inline-block;background:#e2e8f0;border-radius:4px;padding:1px 8px;font-size:12.5px;font-weight:700;color:#334155;margin:0 4px 3px 0;white-space:nowrap}
+.badge.ext{background:#dbeafe;color:#1e40af;white-space:normal}
+.badge.money{background:#ffedd5;color:#9a3412}
+.badge.sc{background:#ede9fe;color:#5b21b6}
+.badge.cm{background:#dcfce7;color:#166534}
+.badge.ga{background:#fce7f3;color:#9d174d}
+.badge.cy{background:#e0e7ff;color:#3730a3}
+.empty{color:var(--muted);padding:30px;text-align:center}
+.legend{display:flex;gap:6px 10px;flex-wrap:wrap;margin-top:16px;font-size:12.5px;color:var(--muted);align-items:center}
+footer{color:var(--muted);font-size:12px;text-align:center;padding:18px}
+@media(max-width:900px){
+  .grid-head{display:none}
+  .row{grid-template-columns:60px minmax(0,1fr)}
+  .row>div:nth-child(n+3){grid-column:2;padding-top:0}
+  .desc,.sec-h,.steps{margin-left:0}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="h-top">
+    <h1 id="home"></h1>
+    <span id="tabs" style="display:contents"></span>
+    <div class="search"><input id="q" type="search" placeholder="검색 (예: 가정통신문, 성립전, 학운위)"></div>
+  </div>
+</header>
+<main><div id="view"></div></main>
+<footer id="foot"></footer>
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const COLOR = {}; D.groups.forEach(g=>COLOR[g.key]=g.color);
+const TITLE = D.meta.short+' 업무 길잡이';
+document.title = TITLE;
+const mShort = m => m.replace(/^\d{4}년 /,'');
+const LSKEY = 'upmu_'+D.meta.short;
+const groupByDept = {}; D.groups.forEach(g=>groupByDept[g.dept]=g);
+const cardById = {}; D.cards.forEach(c=>cardById[c.id]=c);
+let state = {tab:D.groups[0].key, chip:null, msel:null, folded:new Set(), q:''};
+try{ const s=JSON.parse(localStorage.getItem(LSKEY)||'{}'); if(s.tab&&D.groups.find(g=>g.key===s.tab)) state.tab=s.tab; }catch(e){}
+function save(){ try{ localStorage.setItem(LSKEY, JSON.stringify({tab:state.tab})); }catch(e){} }
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const href = p => encodeURI(p).replace(/#/g,'%23');
+const fmtDate = d => d ? `${parseInt(d.slice(5,7))}.${parseInt(d.slice(8,10))}.` : '';
+const TAGCLS = {'외부제출':'ext','예산':'money','학운위':'sc','위원회':'cm','가정통신문':'ga','의회·감사':'ga'};
+const tagHtml = t => `<span class="badge ${TAGCLS[t]||''}">${esc(t)}</span>`;
+const LEGEND = `<div class="legend"><span>표시:</span> <span class="badge ext">제출 →</span>교육청 등에 제출 <span class="badge">내부결재</span> ${tagHtml('예산')}성립전·지출·정산 ${tagHtml('학운위')}학운위 심의 ${tagHtml('위원회')}교내 위원회 ${tagHtml('가정통신문')}가정 배부 <span class="badge cy">매월</span>매달 반복 <span style="background:var(--key);padding:1px 7px;border-radius:4px;border:1px solid #e6d98a">노란 줄</span>핵심 문서 · 제목을 누르면 본문 요지가 펼쳐집니다</div>`;
+const GRIDHEAD = `<div class="grid-head"><div>결재일</div><div>제목</div><div>구분</div><div>근거 공문</div><div>문서</div></div>`;
+
+function go(tab, chip){ state.tab=tab; state.chip=chip||null; state.q=''; document.getElementById('q').value=''; save(); render(); window.scrollTo({top:0}); }
+function goCard(cardId){ const c=cardById[cardId]; state.msel=null; go(groupByDept[c.dept].key, cardId); }
+function docRow(d, opts={}){
+  const c=cardById[d.task]; const isKey=c && c.key.includes(d.id);
+  const links = `<a href="${href(d.pdf)}" target="_blank" title="기안 본문 PDF">📄 본문</a>` + d.att.map(a=>`<a href="${href(a.rel)}" target="_blank" title="${esc(a.name)}">📎 ${esc(a.name)}</a>`).join('');
+  return `<div class="row ${isKey?'key':''}" data-id="${esc(d.id)}" style="--c:${COLOR[d.dept]}">
+    <div class="d">${fmtDate(d.date)}</div>
+    <div><span class="title">${esc(d.title)}</span>
+      ${opts.showTask&&c?`<div class="taskname" data-card="${c.id}">↳ ${opts.showGroup?esc(groupByDept[d.dept].label)+' · ':''}${esc(c.name)}</div>`:''}
+      <div class="body">${esc(d.body)||'(본문 없음 — 서식 집계 문서)'}</div></div>
+    <div><span class="badge ${d.external?'ext':''}">${d.external?'제출 → '+esc(d.recv):'내부결재'}</span>${d.cycle==='매월'?`<span class="badge cy">매월</span>`:''}${d.tags.filter(t=>['예산','학운위','위원회','가정통신문'].includes(t)).map(tagHtml).join('')}</div>
+    <div class="basis">${esc(d.basis)}</div>
+    <div class="links">${links}</div></div>`;
+}
+function bindRows(root){
+  root.querySelectorAll('.row .title').forEach(t=>t.onclick=()=>t.closest('.row').classList.toggle('open'));
+  root.querySelectorAll('.taskname').forEach(t=>t.onclick=()=>goCard(t.dataset.card));
+}
+function renderDept(){
+  const g=D.groups.find(x=>x.key===state.tab); const col=COLOR[g.key];
+  const cards=D.cards.filter(c=>c.dept===g.dept && c.count).sort((a,b)=>a.order-b.order);
+  const chip=state.chip && cardById[state.chip] && cardById[state.chip].dept===g.dept ? cardById[state.chip] : null;
+  const ds=D.docs.filter(d=>d.dept===g.dept && (!chip || d.task===chip.id)).sort((a,b)=>a.date.localeCompare(b.date)||a.num-b.num);
+  const months=new Set(ds.map(d=>d.month));
+  const msel=state.msel;
+  let h=`<div class="detail" style="--c:${col}"><h2><span class="dot" style="background:${col}"></span>${esc(g.label)} 업무 1년</h2>
+    <div class="filter"><span class="lab">업무명</span><div class="chips"><button class="chip ${chip?'':'on'}" data-chip="">전체</button>`+cards.map(c=>`<button class="chip ${chip&&chip.id===c.id?'on':''}" data-chip="${c.id}">${esc(c.name)}</button>`).join('')+`</div></div>
+    <div class="filter"><span class="lab">달</span><div class="jump"><button class="mchip ${msel?'':'on'}" data-m="">전체</button>`+D.months.map(m=>`<button class="mchip ${msel===m?'on':''}" data-m="${esc(m)}" ${months.has(m)||msel===m?'':'disabled'}>${esc(mShort(m))}</button>`).join('')+`</div></div>`;
+  if(chip){
+    h+=`<div class="desc">업무분장: ${esc(chip.desc)}</div>`;
+    if(chip.steps.length) h+=`<div class="sec-h">1년 흐름</div><div class="steps">`+chip.steps.map((s,i)=>`${i?'<span class="arrow">▶</span>':''}<span class="step">${s.when?`<b>${esc(s.when)}</b>`:''}${esc(s.what)}</span>`).join('')+`</div>`;
+  }
+  h+=GRIDHEAD;
+  [...months].filter(m=>!msel||m===msel).sort((a,b)=>D.months.indexOf(a)-D.months.indexOf(b)).forEach(m=>{
+    const md=ds.filter(d=>d.month===m); const folded=!msel && state.folded.has(m);
+    h+=`<div class="month-sec ${folded?'folded':''} ${msel?'single':''}" data-m="${esc(m)}"><div class="month-h"><span class="caret">▾</span>${esc(m)}<small>${md.length}건</small></div><div class="month-body">`+md.map(d=>docRow(d,{showTask:!chip})).join('')+`</div></div>`;
+  });
+  if(!ds.length) h+=`<div class="empty">해당 문서 없음</div>`;
+  else if(msel && !months.has(msel)) h+=`<div class="empty">${esc(msel)}에는 ${chip?'이 업무의 ':''}문서가 없습니다. 다른 달이나 "전체"를 눌러 보세요.</div>`;
+  h+=LEGEND+`</div>`;
+  const v=document.getElementById('view'); v.innerHTML=h;
+  v.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{ state.chip=b.dataset.chip||null; render(); });
+  v.querySelectorAll('.mchip').forEach(b=>b.onclick=()=>{ state.msel=b.dataset.m||null; render(); });
+  const setFold=(sec,on)=>{ sec.classList.toggle('folded',on); if(on) state.folded.add(sec.dataset.m); else state.folded.delete(sec.dataset.m); };
+  v.querySelectorAll('.month-sec .month-h').forEach(hd=>hd.onclick=()=>{ if(state.msel) return; const sec=hd.parentElement; setFold(sec, !sec.classList.contains('folded')); });
+  bindRows(v);
+}
+function renderSearch(){
+  const terms=state.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const hit=D.docs.filter(d=>{ const hay=(d.title+' '+d.att.map(a=>a.name).join(' ')+' '+d.basis+' '+d.body+' '+d.recv+' '+d.tags.join(' ')+' '+(cardById[d.task]?cardById[d.task].name:'')).toLowerCase(); return terms.every(t=>hay.includes(t)); }).sort((a,b)=>a.date.localeCompare(b.date));
+  let h=`<div class="detail" style="--c:#334155"><h2>검색: "${esc(state.q)}" <small style="font-size:14px;color:var(--muted);font-weight:400">${hit.length}건</small></h2>`+GRIDHEAD+`<div class="month-body">`;
+  hit.forEach(d=>h+=docRow(d,{showTask:true,showGroup:true}));
+  h+=`</div>`;
+  if(!hit.length) h+=`<div class="empty">결과가 없습니다.</div>`;
+  h+=`</div>`;
+  const v=document.getElementById('view'); v.innerHTML=h; bindRows(v);
+}
+function renderTabs(){
+  const t=document.getElementById('tabs');
+  t.innerHTML=D.groups.map(g=>`<button data-tab="${g.key}" style="--tc:${COLOR[g.key]}"><span class="dot" style="background:${COLOR[g.key]}"></span>${esc(g.label)}</button>`).join('');
+  t.querySelectorAll('button').forEach(b=>b.onclick=()=>go(b.dataset.tab));
+}
+function render(){
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active', !state.q.trim() && b.dataset.tab===state.tab));
+  if(state.q.trim()) renderSearch(); else renderDept();
+  document.documentElement.style.setProperty('--hh', document.querySelector('header').offsetHeight+'px');
+}
+document.getElementById('home').textContent = TITLE;
+document.getElementById('foot').textContent = D.meta.year_label+' 기안 공문을 업무분장 기준으로 정리했습니다. 원본 폴더와 함께 두어야 문서 링크가 열립니다.';
+renderTabs();
+document.getElementById('home').onclick=()=>go(D.groups[0].key);
+document.getElementById('q').addEventListener('input', e=>{ state.q=e.target.value; render(); });
+window.addEventListener('resize', ()=>document.documentElement.style.setProperty('--hh', document.querySelector('header').offsetHeight+'px'));
+render();
+</script>
+</body>
+</html>
