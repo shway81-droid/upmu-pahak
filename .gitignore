@@ -2,3 +2,14 @@ __pycache__/
 *.pyc
 .DS_Store
 Thumbs.db
+
+# 실제 학교 데이터는 저장소에 들어오지 않는다.
+# 이 스킬이 만드는 산출물은 사용자의 공문 폴더 안에 생기지만,
+# 실수로 저장소 안에서 돌렸을 때를 대비해 막아 둔다.
+_작업/
+*_업무파악.html
+tasks.json
+overrides.json
+notes.json
+docs.json
+titles.txt
